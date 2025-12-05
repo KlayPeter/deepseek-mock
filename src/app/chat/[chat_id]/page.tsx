@@ -3,10 +3,14 @@
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { useRef, useState, useEffect, useMemo } from 'react'
-import EastIcon from '@mui/icons-material/East'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import SmartToyIcon from '@mui/icons-material/SmartToy'
+import PsychologyIcon from '@mui/icons-material/Psychology'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import AttachFileIcon from '@mui/icons-material/AttachFile'
+import MobileMenuButton from '@/src/app/components/MobileMenuButton'
 
 export default function Page() {
   const { chat_id } = useParams()
@@ -17,11 +21,23 @@ export default function Page() {
   const [model, setModel] = useState('deepseek-v3')
   const modelRef = useRef(model)
   const hasAutoSentRef = useRef(false) // 标记是否已自动发送过初始消息
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // 保持 ref 和 state 同步
   useEffect(() => {
     modelRef.current = model
   }, [model])
+
+  // 自动调整 textarea 高度
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        200
+      )}px`
+    }
+  }, [input])
 
   const endRef = useRef<HTMLDivElement>(null)
   const { data: chat } = useQuery({
@@ -117,79 +133,129 @@ export default function Page() {
   }, [allMessages])
 
   return (
-    <div className="flex flex-col h-screen justify-between items-center">
-      <div className="h-4"></div>
-      <div className="flex flex-col gap-8 flex-1">
-        {allMessages.map((message) => (
-          <div
-            key={message.id}
-            className={`rounded-lg flex flex-row ${
-              message?.role === 'assistant'
-                ? 'justify-start mr-18'
-                : 'justify-end ml-10'
-            } `}
-          >
-            <p
-              className={`inline-block p-2 rounded-lg ${
-                message?.role === 'assistant' ? 'bg-blue-300' : 'bg-slate-100'
+    <div className="flex flex-col h-screen bg-ds-bg relative">
+      {/* 移动端菜单按钮 */}
+      <MobileMenuButton />
+
+      {/* 消息列表区域 */}
+      <div className="flex-1 overflow-y-auto scroll-smooth">
+        <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-32">
+          {allMessages.map((message) => (
+            <div
+              key={message.id}
+              className={`mb-6 ${
+                message?.role === 'user' ? 'flex justify-end' : ''
               }`}
             >
-              {message.parts?.map((part: any, index: number) =>
-                part.type === 'text' ? (
-                  <span key={index}>{part.text}</span>
-                ) : null
+              {message?.role === 'user' ? (
+                <div className="bg-[#f3f4f6] text-ds-text px-4 py-2.5 rounded-[20px] max-w-[85%] text-base leading-7 break-words">
+                  {message.parts?.map((part: any, index: number) =>
+                    part.type === 'text' ? (
+                      <span key={index}>{part.text}</span>
+                    ) : null
+                  )}
+                </div>
+              ) : (
+                <div className="w-full flex gap-4 pr-4">
+                  {/* AI Avatar */}
+                  <div className="shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden border border-ds-border/50">
+                      <SmartToyIcon
+                        className="w-5 h-5 text-ds-primary"
+                        style={{ fontSize: '1.25rem' }}
+                      />
+                    </div>
+                  </div>
+                  {/* AI Message Content */}
+                  <div className="flex-1 overflow-hidden min-w-0 pt-0.5">
+                    <div className="text-gray-800 leading-7">
+                      {message.parts?.map((part: any, index: number) =>
+                        part.type === 'text' ? (
+                          <span key={index} className="whitespace-pre-wrap">
+                            {part.text}
+                          </span>
+                        ) : null
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
-            </p>
-          </div>
-        ))}
+            </div>
+          ))}
+          <div ref={endRef} />
+        </div>
       </div>
 
-      <div className="h-4" ref={endRef}></div>
+      {/* 底部输入区域 */}
+      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-white via-white to-transparent pt-10 pb-6 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative flex flex-col bg-ds-input rounded-[26px] border border-ds-inputBorder shadow-ds transition-all duration-300">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  status === 'ready' &&
+                  input.trim()
+                ) {
+                  e.preventDefault()
+                  sendMessage({ text: input })
+                  setInput('')
+                }
+              }}
+              disabled={status !== 'ready'}
+              placeholder="给 DeepSeek 发送消息"
+              rows={1}
+              className="w-full bg-transparent text-ds-text placeholder-gray-400 px-5 py-4 outline-none resize-none max-h-[200px] overflow-y-auto rounded-[26px] text-base"
+            />
 
-      {/*输入框 */}
-      <div className="flex flex-col items-center justify-center mt-4 shadow-lg border-[1px] border-gray-300 h-32 rounded-lg w-2/3">
-        <textarea
-          className="w-full rounder-lg p-3 h-30 focus:outline-none"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={status !== 'ready'}
-          placeholder="Say something..."
-        ></textarea>
-        <div className="flex flex-row items-center justify-center w-full h-12 mb-2">
-          <div>
-            <div
-              className={`flex flex-row items-center justify-center rounded-lg border-[1px] px-2 py-1 ml-2 cursor-pointer ${
-                model === 'deepseek-r1'
-                  ? 'border-blue-300 bg-blue-200'
-                  : 'border-gray-300'
-              }`}
-              onClick={handleModelChange}
-            >
-              <p className="text-sm">深度思考（R1）</p>
+            <div className="flex items-center justify-between px-3 pb-3 mt-2">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleModelChange}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    model === 'deepseek-r1'
+                      ? 'bg-blue-50 text-ds-primary border-blue-200'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <PsychologyIcon style={{ fontSize: '0.875rem' }} />
+                  深度思考 (R1)
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+                  <AttachFileIcon style={{ fontSize: '1.25rem' }} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (input.trim() && status === 'ready' && chat?.data) {
+                      sendMessage({ text: input })
+                      setInput('')
+                    }
+                  }}
+                  disabled={!input.trim() || status !== 'ready'}
+                  className={`p-2 rounded-full transition-all duration-200 flex items-center justify-center ${
+                    input.trim() && status === 'ready'
+                      ? 'bg-ds-primary text-white shadow-md hover:bg-[#3d5ce0]'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <ArrowUpwardIcon style={{ fontSize: '1.25rem' }} />
+                </button>
+              </div>
             </div>
           </div>
-          <div
-            className={`flex items-center justify-center border-2 mr-4 border-black p-1 rounder-full ${
-              input.trim() && status === 'ready' && chat?.data
-                ? 'cursor-pointer'
-                : 'cursor-not-allowed opacity-50'
-            }`}
-            onClick={(e) => {
-              e.preventDefault()
-              if (input.trim() && status === 'ready' && chat?.data) {
-                console.log('发送消息:', {
-                  text: input,
-                  model: modelRef.current,
-                  chat_id,
-                  chat_user_id: chat.data.userId,
-                })
-                sendMessage({ text: input })
-                setInput('')
-              }
-            }}
-          >
-            <EastIcon />
-          </div>
+        </div>
+        <div className="text-center mt-2">
+          <p className="text-[11px] text-gray-400">
+            内容由 AI 生成，请仔细甄别
+          </p>
         </div>
       </div>
     </div>

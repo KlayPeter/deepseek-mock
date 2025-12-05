@@ -1,26 +1,107 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* DeepSeek Color Scheme */
+  --ds-bg: #ffffff;
+  --ds-sidebar: #f9fafb;
+  --ds-primary: #4d6bfe;
+  --ds-hover: #f3f4f6;
+  --ds-border: #e5e7eb;
+  --ds-text: #111827;
+  --ds-subtext: #6b7280;
+  --ds-input: #ffffff;
+  --ds-inputBorder: #e5e7eb;
+  --ds-codeBg: #f6f8fa;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: 'Inter', var(--font-geist-sans), sans-serif;
+  --font-mono: 'JetBrains Mono', var(--font-geist-mono), monospace;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* DeepSeek Colors */
+  --color-ds-bg: var(--ds-bg);
+  --color-ds-sidebar: var(--ds-sidebar);
+  --color-ds-primary: var(--ds-primary);
+  --color-ds-hover: var(--ds-hover);
+  --color-ds-border: var(--ds-border);
+  --color-ds-text: var(--ds-text);
+  --color-ds-subtext: var(--ds-subtext);
+  --color-ds-input: var(--ds-input);
+  --color-ds-inputBorder: var(--ds-inputBorder);
+  --color-ds-codeBg: var(--ds-codeBg);
+
+  /* Custom Shadow */
+  --shadow-ds: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-ds-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #ffffff;
+  color: #111827;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+/* Bounce animation delays */
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+.delay-75 {
+  animation-delay: 75ms;
+}
+
+.delay-150 {
+  animation-delay: 150ms;
 }
