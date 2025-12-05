@@ -10,8 +10,10 @@ import SmartToyIcon from '@mui/icons-material/SmartToy'
 import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
 import DeleteIcon from '@mui/icons-material/Delete'
+import WarningIcon from '@mui/icons-material/Warning'
 import { useState, useRef, useEffect } from 'react'
 import { useNavibar } from './NavibarContext'
+import { createPortal } from 'react-dom'
 
 type Props = {}
 
@@ -21,9 +23,14 @@ const Navibar = (props: Props) => {
   const pathname = usePathname()
   const queryClient = useQueryClient()
   const { isOpen, setIsOpen } = useNavibar()
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const [deletingId, setDeletingId] = useState<number | null>(null) // 正在删除的ID（loading状态）
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null) // 待确认删除的ID
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
+
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   const { data: chats } = useQuery({
     queryKey: ['chats'],
@@ -36,14 +43,23 @@ const Navibar = (props: Props) => {
   // 点击外部关闭菜单
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuId(null)
+      // 如果点击的是菜单按钮或菜单本身，不处理
+      if (
+        (menuButtonRef.current &&
+          menuButtonRef.current.contains(event.target as Node)) ||
+        (menuRef.current && menuRef.current.contains(event.target as Node))
+      ) {
+        return
       }
+      // 关闭菜单
+      setOpenMenuId(null)
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
+    if (openMenuId) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [openMenuId])
 
   // 删除聊天的 mutation
   const { mutate: deleteChat } = useMutation({
@@ -60,7 +76,7 @@ const Navibar = (props: Props) => {
       }
 
       setDeletingId(null)
-      setOpenMenuId(null)
+      setConfirmDeleteId(null)
     },
     onError: (error) => {
       console.error('删除失败:', error)
@@ -70,17 +86,33 @@ const Navibar = (props: Props) => {
   })
 
   const handleMenuToggle = (e: React.MouseEvent, chatId: number) => {
-    e.stopPropagation() // 防止触发聊天跳转
-    setOpenMenuId(openMenuId === chatId ? null : chatId)
+    e.stopPropagation()
+
+    if (openMenuId === chatId) {
+      setOpenMenuId(null)
+      return
+    }
+
+    // 计算菜单位置（按钮右侧）
+    const rect = e.currentTarget.getBoundingClientRect()
+    setMenuPosition({
+      top: rect.top, // 顶部对齐
+      left: rect.right + 8, // 右侧 8px 间距
+    })
+    setOpenMenuId(chatId)
+    menuButtonRef.current = e.currentTarget as HTMLButtonElement
   }
 
-  const handleDelete = (e: React.MouseEvent, chatId: number) => {
-    e.stopPropagation() // 防止触发聊天跳转
+  const handleRequestDelete = (e: React.MouseEvent, chatId: number) => {
+    e.stopPropagation()
     setOpenMenuId(null)
+    setConfirmDeleteId(chatId)
+  }
 
-    if (confirm('确定要删除这个聊天吗？此操作无法撤销。')) {
-      setDeletingId(chatId)
-      deleteChat(chatId)
+  const handleConfirmDelete = () => {
+    if (confirmDeleteId) {
+      setDeletingId(confirmDeleteId)
+      deleteChat(confirmDeleteId)
     }
   }
 
@@ -96,9 +128,9 @@ const Navibar = (props: Props) => {
 
       <div
         className={`
-        fixed md:static inset-y-0 left-0 z-50
+        fixed inset-y-0 left-0 z-50
         w-[260px] bg-ds-sidebar border-r border-ds-border flex flex-col
-        transform md:transform-none transition-transform duration-300 ease-in-out
+        transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
       >
@@ -113,7 +145,7 @@ const Navibar = (props: Props) => {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-ds-subtext hover:text-ds-text transition-colors md:hidden"
+              className="text-ds-subtext hover:text-ds-text transition-colors"
               title="收起侧边栏"
             >
               <MenuIcon className="w-5 h-5" />
@@ -158,13 +190,15 @@ const Navibar = (props: Props) => {
                       pathname === `/chat/${chat.id}`
                         ? 'bg-gray-200/60 text-ds-text'
                         : 'text-ds-text hover:bg-gray-100'
-                    }`}
+                    } ${openMenuId === chat.id ? 'bg-gray-100' : ''}`}
                   >
-                    <span className="truncate block pr-8">{chat.title}</span>
+                    <span className="truncate block pr-8" title={chat.title}>
+                      {chat.title}
+                    </span>
 
                     {/* 三个点菜单按钮容器 */}
                     <div
-                      className={`absolute right-1 top-1/2 -translate-y-1/2 ${
+                      className={`absolute right-1 top-1/2 -translate-y-1/2 z-50 ${
                         openMenuId === chat.id
                           ? 'opacity-100'
                           : 'opacity-0 group-hover:opacity-100'
@@ -174,33 +208,11 @@ const Navibar = (props: Props) => {
                     >
                       <button
                         onClick={(e) => handleMenuToggle(e, chat.id)}
-                        disabled={deletingId === chat.id}
                         className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-ds-subtext"
                         title="更多选项"
                       >
                         <MoreHorizIcon className="w-4 h-4" />
                       </button>
-
-                      {/* 下拉菜单 */}
-                      {openMenuId === chat.id && (
-                        <div
-                          ref={menuRef}
-                          className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-xl border border-gray-200 z-[100] py-1.5 overflow-hidden"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
-                        >
-                          <button
-                            onClick={(e) => handleDelete(e, chat.id)}
-                            disabled={deletingId === chat.id}
-                            className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5"
-                          >
-                            <DeleteIcon className="w-4 h-4" />
-                            <span className="font-medium">
-                              {deletingId === chat.id ? '删除中...' : '删除'}
-                            </span>
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )
@@ -236,6 +248,82 @@ const Navibar = (props: Props) => {
           </button>
         </div>
       </div>
+
+      {/* Portal 渲染菜单 - 放在 body 层级以避免 overflow 裁剪 */}
+      {openMenuId &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="fixed z-[9999] bg-white rounded-lg shadow-lg border border-gray-200 py-1 overflow-hidden w-28 fade-in"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              animation: 'fadeIn 0.1s ease-out',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={(e) => handleRequestDelete(e, openMenuId)}
+              className="w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+            >
+              <DeleteIcon sx={{ fontSize: 16 }} />
+              <span>删除</span>
+            </button>
+          </div>,
+          document.body
+        )}
+
+      {/* 删除确认弹窗 */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 fade-in">
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-[400px] p-6 scale-in mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="font-bold text-lg text-gray-900">删除对话？</div>
+              <div className="text-sm text-gray-600">
+                删除后将无法恢复，确认要删除这个对话吗？
+              </div>
+              <div className="flex justify-end gap-3 mt-2">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  disabled={!!deletingId}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {deletingId ? '删除中...' : '确认删除'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .scale-in {
+          animation: fadeIn 0.15s ease-out;
+        }
+        .fade-in {
+          animation: fadeIn 0.15s ease-out;
+        }
+      `}</style>
     </>
   )
 }

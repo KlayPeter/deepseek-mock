@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import Navibar from './components/Navibar'
 import QueryClientProvider from '@/src/app/components/QueryClientProvider'
 import { NavibarProvider } from './components/NavibarContext'
+import MainContent from './components/MainContent'
 
 import './globals.css'
 
@@ -35,12 +36,8 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
             <NavibarProvider>
-              <div className="flex">
-                <Navibar />
-                <div className="flex-1 h-screen overflow-hidden">
-                  {children}
-                </div>
-              </div>
+              <Navibar />
+              <MainContent>{children}</MainContent>
             </NavibarProvider>
           </body>
         </html>

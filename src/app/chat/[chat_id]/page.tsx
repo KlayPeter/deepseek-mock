@@ -139,7 +139,7 @@ export default function Page() {
 
       {/* 消息列表区域 */}
       <div className="flex-1 overflow-y-auto scroll-smooth">
-        <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-32">
+        <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-56">
           {allMessages.map((message) => (
             <div
               key={message.id}

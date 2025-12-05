@@ -12,7 +12,7 @@ export default function MobileMenuButton() {
   return (
     <button
       onClick={toggleSidebar}
-      className="md:hidden fixed top-4 left-4 z-30 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
+      className="fixed top-4 left-4 z-30 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
       aria-label="打开菜单"
     >
       <MenuIcon className="w-6 h-6 text-gray-700" />
