@@ -1,0 +1,20 @@
+import { integer, pgTable, varchar, serial, text } from 'drizzle-orm/pg-core'
+
+export const chatsTable = pgTable('chats', {
+  id: serial().primaryKey(),
+  userId: text('user_id').notNull(),
+  title: text('title').notNull(),
+  model: text('model').notNull(),
+})
+
+export const messagesTable = pgTable('messages', {
+  id: serial().primaryKey(),
+  chatId: integer('chat_id')
+    .notNull()
+    .references(() => chatsTable.id),
+  role: text('role').notNull(),
+  content: text('content').notNull(),
+})
+
+export type ChatModel = typeof chatsTable.$inferSelect
+export type MessageModel = typeof messagesTable.$inferSelect
