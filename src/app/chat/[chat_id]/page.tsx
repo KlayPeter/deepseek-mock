@@ -12,6 +12,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
 import MobileMenuButton from '@/src/app/components/MobileMenuButton'
 import ReasoningBlock from '@/src/app/components/ReasoningBlock'
+import { MarkdownRenderer } from '@/src/app/components/MarkdownRenderer'
 
 export default function Page() {
   const { chat_id } = useParams()
@@ -210,9 +211,9 @@ export default function Page() {
                         }
                         if (part.type === 'text') {
                           return (
-                            <span key={index} className="whitespace-pre-wrap">
-                              {part.text}
-                            </span>
+                            <div key={index}>
+                              <MarkdownRenderer content={part.text} />
+                            </div>
                           )
                         }
                         return null

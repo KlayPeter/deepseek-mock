@@ -7,6 +7,7 @@ import { NavibarProvider } from './components/NavibarContext'
 import MainContent from './components/MainContent'
 
 import './globals.css'
+import 'katex/dist/katex.min.css'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
