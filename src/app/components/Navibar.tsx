@@ -10,7 +10,6 @@ import SmartToyIcon from '@mui/icons-material/SmartToy'
 import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
 import DeleteIcon from '@mui/icons-material/Delete'
-import WarningIcon from '@mui/icons-material/Warning'
 import PsychologyIcon from '@mui/icons-material/Psychology'
 import { useState, useRef, useEffect } from 'react'
 import { useNavibar } from './NavibarContext'
@@ -40,6 +39,25 @@ const Navibar = (props: Props) => {
     },
     enabled: !!user?.id,
   })
+
+  // 监听窗口大小变化，响应式展开/关闭侧边栏
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        // 桌面端自动展开
+        setIsOpen(true)
+      } else {
+        // 移动端自动关闭
+        setIsOpen(false)
+      }
+    }
+
+    // 添加监听器
+    window.addEventListener('resize', handleResize)
+
+    // 清理监听器
+    return () => window.removeEventListener('resize', handleResize)
+  }, [setIsOpen])
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -235,26 +253,41 @@ const Navibar = (props: Props) => {
           </div>
         </div>
 
-        {/* User Profile */}
+        {/* User Profile - 简洁版 */}
         <div className="p-4 border-t border-ds-border">
-          <button className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-ds-hover text-sm text-ds-text transition-colors">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
-              {user?.imageUrl ? (
-                <img src={user.imageUrl} alt="User" />
-              ) : (
-                <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                  alt="User"
-                />
-              )}
-            </div>
-            <div className="flex-1 text-left">
-              <div className="font-medium text-ds-text">
-                {user?.fullName || 'User'}
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center shrink-0">
+                {user.imageUrl ? (
+                  <img
+                    src={user.imageUrl}
+                    alt={user.fullName || 'User'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                    alt="User"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                {user.primaryEmailAddress?.emailAddress && (
+                  <div className="text-sm text-ds-text truncate">
+                    {user.primaryEmailAddress.emailAddress}
+                  </div>
+                )}
               </div>
             </div>
-            <MoreHorizIcon className="w-4 h-4 text-ds-subtext" />
-          </button>
+          ) : (
+            <button
+              onClick={() => router.push('/sign-in')}
+              className="w-full px-4 py-2 bg-ds-primary text-white rounded-lg hover:bg-[#3d5ce0] transition-colors text-sm font-medium"
+            >
+              登录 / 注册
+            </button>
+          )}
         </div>
       </div>
 

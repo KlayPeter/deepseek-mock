@@ -9,6 +9,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import CheckIcon from '@mui/icons-material/Check'
+import type { Components } from 'react-markdown'
 
 interface MarkdownRendererProps {
   content: string
@@ -35,6 +36,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
+          // @ts-ignore - react-markdown types issue
           // 代码块渲染
           code({ node, inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '')
@@ -68,7 +70,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                   </div>
                   {/* 代码内容 */}
                   <SyntaxHighlighter
-                    style={vscDarkPlus}
+                    style={vscDarkPlus as any}
                     language={language}
                     PreTag="div"
                     customStyle={{
@@ -77,14 +79,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                       fontSize: '0.875rem',
                       lineHeight: '1.5',
                       background: '#1e1e1e',
+                      fontFamily:
+                        'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
                     }}
-                    codeTagProps={{
-                      style: {
-                        fontFamily:
-                          'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
-                      },
-                    }}
-                    {...props}
                   >
                     {codeString}
                   </SyntaxHighlighter>
