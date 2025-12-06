@@ -11,6 +11,7 @@ import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
 import DeleteIcon from '@mui/icons-material/Delete'
 import WarningIcon from '@mui/icons-material/Warning'
+import PsychologyIcon from '@mui/icons-material/Psychology'
 import { useState, useRef, useEffect } from 'react'
 import { useNavibar } from './NavibarContext'
 import { createPortal } from 'react-dom'
@@ -192,9 +193,17 @@ const Navibar = (props: Props) => {
                         : 'text-ds-text hover:bg-gray-100'
                     } ${openMenuId === chat.id ? 'bg-gray-100' : ''}`}
                   >
-                    <span className="truncate block pr-8" title={chat.title}>
-                      {chat.title}
-                    </span>
+                    <div className="flex items-center gap-2 pr-8">
+                      <span className="truncate flex-1" title={chat.title}>
+                        {chat.title}
+                      </span>
+                      {chat.model === 'deepseek-r1' && (
+                        <span className="shrink-0 flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-50 text-ds-primary border border-blue-200">
+                          <PsychologyIcon style={{ fontSize: '0.625rem' }} />
+                          R1
+                        </span>
+                      )}
+                    </div>
 
                     {/* 三个点菜单按钮容器 */}
                     <div

@@ -11,6 +11,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
 import MobileMenuButton from '@/src/app/components/MobileMenuButton'
+import ReasoningBlock from '@/src/app/components/ReasoningBlock'
 
 export default function Page() {
   const { chat_id } = useParams()
@@ -85,6 +86,13 @@ export default function Page() {
     chatRef.current = chat
   }, [chat])
 
+  // 从数据库加载聊天时，初始化模型状态
+  useEffect(() => {
+    if (chat?.data?.model) {
+      setModel(chat.data.model)
+    }
+  }, [chat?.data?.model])
+
   // 自动发送初始消息（仅一次）
   useEffect(() => {
     if (
@@ -137,6 +145,33 @@ export default function Page() {
       {/* 移动端菜单按钮 */}
       <MobileMenuButton />
 
+      {/* 顶部导航栏 - 显示聊天标题和当前激活的模型 */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-ds-border">
+        <div className="max-w-3xl mx-auto w-full px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-sm font-medium text-ds-text truncate max-w-[200px] md:max-w-md">
+              {chat?.data?.title || '新对话'}
+            </h2>
+            <span
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium border ${
+                model === 'deepseek-r1'
+                  ? 'bg-blue-50 text-ds-primary border-blue-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200'
+              }`}
+            >
+              {model === 'deepseek-r1' ? (
+                <>
+                  <PsychologyIcon style={{ fontSize: '0.75rem' }} />
+                  R1
+                </>
+              ) : (
+                'V3'
+              )}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* 消息列表区域 */}
       <div className="flex-1 overflow-y-auto scroll-smooth">
         <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-56">
@@ -169,19 +204,58 @@ export default function Page() {
                   {/* AI Message Content */}
                   <div className="flex-1 overflow-hidden min-w-0 pt-0.5">
                     <div className="text-gray-800 leading-7">
-                      {message.parts?.map((part: any, index: number) =>
-                        part.type === 'text' ? (
-                          <span key={index} className="whitespace-pre-wrap">
-                            {part.text}
-                          </span>
-                        ) : null
-                      )}
+                      {message.parts?.map((part: any, index: number) => {
+                        if (part.type === 'reasoning') {
+                          return <ReasoningBlock key={index} text={part.text} />
+                        }
+                        if (part.type === 'text') {
+                          return (
+                            <span key={index} className="whitespace-pre-wrap">
+                              {part.text}
+                            </span>
+                          )
+                        }
+                        return null
+                      })}
                     </div>
                   </div>
                 </div>
               )}
             </div>
           ))}
+
+          {/* Loading 指示器 - AI 正在回复 */}
+          {status !== 'ready' && (
+            <div className="w-full flex gap-4 pr-4 mb-6">
+              {/* AI Avatar */}
+              <div className="shrink-0">
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden border border-ds-border/50">
+                  <SmartToyIcon
+                    className="w-5 h-5 text-ds-primary"
+                    style={{ fontSize: '1.25rem' }}
+                  />
+                </div>
+              </div>
+              {/* Loading 动画 */}
+              <div className="flex-1 overflow-hidden min-w-0 pt-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 bg-ds-primary rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-ds-primary rounded-full animate-bounce"
+                    style={{ animationDelay: '0.2s' }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-ds-primary rounded-full animate-bounce"
+                    style={{ animationDelay: '0.4s' }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {status === 'submitted' ? '正在思考...' : 'AI 正在回复...'}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div ref={endRef} />
         </div>
       </div>

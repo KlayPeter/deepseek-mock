@@ -85,8 +85,10 @@ export async function POST(req: Request) {
       },
     })
 
-    // 返回流式 UI 消息响应
-    return result.toUIMessageStreamResponse()
+    // 返回流式 UI 消息响应，包含思考过程
+    return result.toUIMessageStreamResponse({
+      sendReasoning: true,
+    })
   } catch (error) {
     console.error('Chat API error:', error)
     return new Response(

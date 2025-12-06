@@ -32,7 +32,7 @@ export default function Home() {
     }
   }, [input])
 
-  const { mutate: createChat } = useMutation({
+  const { mutate: createChat, isPending } = useMutation({
     mutationFn: async () => {
       const model = useThinking ? 'deepseek-r1' : 'deepseek-v3'
       return axios.post('/api/create-chat', {
@@ -90,9 +90,10 @@ export default function Home() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            disabled={isPending}
             placeholder="给 DeepSeek 发送消息"
             rows={1}
-            className="w-full bg-transparent text-ds-text placeholder-gray-400 px-5 py-5 pt-5 outline-none resize-none max-h-[200px] overflow-y-auto rounded-[26px] text-lg"
+            className="w-full bg-transparent text-ds-text placeholder-gray-400 px-5 py-5 pt-5 outline-none resize-none max-h-[200px] overflow-y-auto rounded-[26px] text-lg disabled:opacity-60"
           />
 
           <div className="flex items-center justify-between px-3 pb-3 mt-2">
@@ -129,14 +130,18 @@ export default function Home() {
 
               <button
                 onClick={handleSubmit}
-                disabled={!input.trim()}
+                disabled={!input.trim() || isPending}
                 className={`p-2 rounded-full transition-all duration-200 flex items-center justify-center ${
                   input.trim()
                     ? 'bg-ds-primary text-white shadow-md hover:bg-[#3d5ce0]'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                <ArrowUpwardIcon style={{ fontSize: '1.25rem' }} />
+                {isPending ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <ArrowUpwardIcon style={{ fontSize: '1.25rem' }} />
+                )}
               </button>
             </div>
           </div>
