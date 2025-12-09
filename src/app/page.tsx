@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useMutation, QueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
@@ -20,7 +20,7 @@ export default function Home() {
 
   const router = useRouter()
   const { user } = useUser()
-  const queryClient = new QueryClient()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     if (textareaRef.current) {
