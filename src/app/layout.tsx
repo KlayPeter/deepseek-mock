@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
-import Navibar from './components/Navibar'
 import QueryClientProvider from '@/src/app/components/QueryClientProvider'
 import { NavibarProvider } from './components/NavibarContext'
-import MainContent from './components/MainContent'
+import LayoutContent from './components/LayoutContent'
 
 import './globals.css'
 import 'katex/dist/katex.min.css'
@@ -37,8 +36,7 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
             <NavibarProvider>
-              <Navibar />
-              <MainContent>{children}</MainContent>
+              <LayoutContent>{children}</LayoutContent>
             </NavibarProvider>
           </body>
         </html>

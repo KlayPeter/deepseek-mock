@@ -8,7 +8,7 @@ export default function MainContent({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className={`w-full h-screen overflow-hidden transition-all duration-300 ${
+      className={`w-full h-screen overflow-hidden overflow-x-hidden transition-all duration-300 ${
         isOpen ? 'md:ml-[260px]' : 'ml-0'
       }`}
     >

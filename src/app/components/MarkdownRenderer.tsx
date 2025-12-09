@@ -31,7 +31,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   }
 
   return (
-    <div className="markdown-content">
+    <div className="markdown-content word-break max-w-full overflow-x-auto">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
@@ -45,7 +45,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
             if (!inline && language) {
               return (
-                <div className="relative group my-4 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <div className="relative group my-4 rounded-lg overflow-hidden border border-gray-200 shadow-sm max-w-full">
                   {/* 代码块头部 */}
                   <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e1e] border-b border-gray-700">
                     <span className="text-xs font-mono text-gray-300">
@@ -81,6 +81,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                       background: '#1e1e1e',
                       fontFamily:
                         'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+                      maxWidth: '100%',
+                      overflowX: 'auto',
                     }}
                   >
                     {codeString}
@@ -144,10 +146,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           ),
           // 表格
           table: ({ children }) => (
-            <div className="overflow-x-auto my-4">
-              <table className="min-w-full border-collapse border border-gray-300">
-                {children}
-              </table>
+            <div className="overflow-x-auto my-4 max-w-full rounded-lg border border-gray-300">
+              <table className="min-w-full border-collapse">{children}</table>
             </div>
           ),
           thead: ({ children }) => (

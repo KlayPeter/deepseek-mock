@@ -1,6 +1,6 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usePathname, useRouter } from 'next/navigation'
 import axios from 'axios'
@@ -11,6 +11,7 @@ import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PsychologyIcon from '@mui/icons-material/Psychology'
+import LogoutIcon from '@mui/icons-material/Logout'
 import { useState, useRef, useEffect } from 'react'
 import { useNavibar } from './NavibarContext'
 import { createPortal } from 'react-dom'
@@ -19,6 +20,7 @@ type Props = {}
 
 const Navibar = (props: Props) => {
   const { user } = useUser()
+  const { signOut } = useClerk()
   const router = useRouter()
   const pathname = usePathname()
   const queryClient = useQueryClient()
@@ -27,10 +29,12 @@ const Navibar = (props: Props) => {
   const [deletingId, setDeletingId] = useState<number | null>(null) // 正在删除的ID（loading状态）
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null) // 待确认删除的ID
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false) // 用户菜单状态
 
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const menuButtonRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const userMenuRef = useRef<HTMLDivElement | null>(null)
 
   const { data: chats } = useQuery({
     queryKey: ['chats'],
@@ -66,19 +70,22 @@ const Navibar = (props: Props) => {
       if (
         (menuButtonRef.current &&
           menuButtonRef.current.contains(event.target as Node)) ||
-        (menuRef.current && menuRef.current.contains(event.target as Node))
+        (menuRef.current && menuRef.current.contains(event.target as Node)) ||
+        (userMenuRef.current &&
+          userMenuRef.current.contains(event.target as Node))
       ) {
         return
       }
       // 关闭菜单
       setOpenMenuId(null)
+      setUserMenuOpen(false)
     }
 
-    if (openMenuId) {
+    if (openMenuId || userMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [openMenuId])
+  }, [openMenuId, userMenuOpen])
 
   // 删除聊天的 mutation
   const { mutate: deleteChat } = useMutation({
@@ -148,7 +155,7 @@ const Navibar = (props: Props) => {
       <div
         className={`
         fixed inset-y-0 left-0 z-50
-        w-[260px] bg-ds-sidebar border-r border-ds-border flex flex-col
+        w-[260px] bg-ds-sidebar border-r border-ds-border flex flex-col overflow-hidden
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
@@ -186,7 +193,7 @@ const Navibar = (props: Props) => {
         </div>
 
         {/* Chat List */}
-        <div className="flex-1 overflow-y-auto px-3 space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 space-y-6">
           <div>
             <div className="px-3 mb-2 text-xs font-medium text-ds-subtext">
               7天内
@@ -211,8 +218,11 @@ const Navibar = (props: Props) => {
                         : 'text-ds-text hover:bg-gray-100'
                     } ${openMenuId === chat.id ? 'bg-gray-100' : ''}`}
                   >
-                    <div className="flex items-center gap-2 pr-8">
-                      <span className="truncate flex-1" title={chat.title}>
+                    <div className="flex items-center gap-2 pr-8 min-w-0">
+                      <span
+                        className="truncate flex-1 block"
+                        title={chat.title}
+                      >
                         {chat.title}
                       </span>
                       {chat.model === 'deepseek-r1' && (
@@ -254,32 +264,60 @@ const Navibar = (props: Props) => {
         </div>
 
         {/* User Profile - 简洁版 */}
-        <div className="p-4 border-t border-ds-border">
+        <div className="p-4 border-t border-ds-border shrink-0">
           {user ? (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center shrink-0">
-                {user.imageUrl ? (
-                  <img
-                    src={user.imageUrl}
-                    alt={user.fullName || 'User'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <img
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
-                    alt="User"
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                {user.primaryEmailAddress?.emailAddress && (
-                  <div className="text-sm text-ds-text truncate">
-                    {user.primaryEmailAddress.emailAddress}
-                  </div>
-                )}
-              </div>
-            </div>
+            <>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="w-full flex items-center gap-3 hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors min-w-0"
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center shrink-0">
+                  {user.imageUrl ? (
+                    <img
+                      src={user.imageUrl}
+                      alt={user.fullName || 'User'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                      alt="User"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 text-left overflow-hidden">
+                  {user.primaryEmailAddress?.emailAddress && (
+                    <div className="text-sm text-ds-text truncate">
+                      {user.primaryEmailAddress.emailAddress}
+                    </div>
+                  )}
+                </div>
+                <MoreHorizIcon className="w-5 h-5 text-ds-subtext shrink-0" />
+              </button>
+
+              {/* 用户下拉菜单 */}
+              {userMenuOpen && (
+                <div
+                  ref={userMenuRef}
+                  className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 overflow-hidden fade-in"
+                >
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setUserMenuOpen(false)
+                      await signOut()
+                      router.push('/')
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                  >
+                    <LogoutIcon sx={{ fontSize: 18 }} />
+                    <span>退出登录</span>
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <button
               onClick={() => router.push('/sign-in')}
@@ -297,7 +335,7 @@ const Navibar = (props: Props) => {
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[9999] bg-white rounded-lg shadow-lg border border-gray-200 py-1 overflow-hidden w-28 fade-in"
+            className="fixed z-9999 bg-white rounded-lg shadow-lg border border-gray-200 py-1 overflow-hidden w-28 fade-in"
             style={{
               top: menuPosition.top,
               left: menuPosition.left,
@@ -318,7 +356,7 @@ const Navibar = (props: Props) => {
 
       {/* 删除确认弹窗 */}
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 fade-in">
+        <div className="fixed inset-0 z-10000 flex items-center justify-center bg-black/50 fade-in">
           <div
             className="bg-white rounded-2xl shadow-2xl w-[400px] p-6 scale-in mx-4"
             onClick={(e) => e.stopPropagation()}

@@ -1,4 +1,4 @@
-import { SignIn } from '@clerk/nextjs'
+import { SignUp } from '@clerk/nextjs'
 
 export default function Page() {
   return (
@@ -6,9 +6,9 @@ export default function Page() {
       {/* 背景装饰 */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]"></div>
 
-      {/* 登录框容器 */}
+      {/* 注册框容器 */}
       <div className="relative z-10">
-        <SignIn
+        <SignUp
           appearance={{
             elements: {
               rootBox: 'shadow-2xl',

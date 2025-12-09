@@ -67,7 +67,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-ds-bg px-4 -mt-20">
+    <div className="h-screen flex flex-col items-center justify-center bg-ds-bg px-4 sm:px-6 -mt-20">
       {/* 移动端菜单按钮 */}
       <MobileMenuButton />
 

@@ -174,8 +174,8 @@ export default function Page() {
       </div>
 
       {/* 消息列表区域 */}
-      <div className="flex-1 overflow-y-auto scroll-smooth">
-        <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-56">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
+        <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 pb-56">
           {allMessages.map((message) => (
             <div
               key={message.id}
@@ -184,7 +184,7 @@ export default function Page() {
               }`}
             >
               {message?.role === 'user' ? (
-                <div className="bg-[#f3f4f6] text-ds-text px-4 py-2.5 rounded-[20px] max-w-[85%] text-base leading-7 break-words">
+                <div className="bg-[#f3f4f6] text-ds-text px-4 py-2.5 rounded-[20px] max-w-[80%] sm:max-w-[85%] text-base leading-7 break-words word-break">
                   {message.parts?.map((part: any, index: number) =>
                     part.type === 'text' ? (
                       <span key={index}>{part.text}</span>
@@ -192,7 +192,7 @@ export default function Page() {
                   )}
                 </div>
               ) : (
-                <div className="w-full flex gap-4 pr-4">
+                <div className="w-full flex gap-3 sm:gap-4">
                   {/* AI Avatar */}
                   <div className="shrink-0">
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden border border-ds-border/50">
@@ -262,7 +262,7 @@ export default function Page() {
       </div>
 
       {/* 底部输入区域 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-white via-white to-transparent pt-10 pb-6 px-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-white via-white to-transparent pt-10 pb-6 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <div className="relative flex flex-col bg-ds-input rounded-[26px] border border-ds-inputBorder shadow-ds transition-all duration-300">
             <textarea

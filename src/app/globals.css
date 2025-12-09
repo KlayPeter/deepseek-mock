@@ -105,3 +105,16 @@ body {
 .delay-150 {
   animation-delay: 150ms;
 }
+
+/* 文本换行和防止溢出 */
+.word-break {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 确保不会出现水平滚动 */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

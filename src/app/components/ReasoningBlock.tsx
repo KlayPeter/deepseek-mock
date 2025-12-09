@@ -13,7 +13,7 @@ export default function ReasoningBlock({ text }: ReasoningBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <div className="mb-4 border border-blue-200/60 rounded-xl overflow-hidden bg-gradient-to-br from-blue-50/40 to-indigo-50/20 shadow-sm hover:shadow-md transition-shadow">
+    <div className="mb-4 border border-blue-200/60 rounded-xl overflow-hidden bg-linear-to-br from-blue-50/40 to-indigo-50/20 shadow-sm hover:shadow-md transition-shadow max-w-full">
       {/* 折叠/展开按钮 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -56,7 +56,7 @@ export default function ReasoningBlock({ text }: ReasoningBlockProps) {
         }`}
       >
         <div className="px-4 pb-4">
-          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-white/70 rounded-lg p-4 border border-blue-100/50 shadow-inner">
+          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-white/70 rounded-lg p-4 border border-blue-100/50 shadow-inner word-break overflow-x-auto">
             {text}
           </div>
         </div>
