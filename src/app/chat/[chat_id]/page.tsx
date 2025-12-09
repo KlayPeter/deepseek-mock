@@ -10,6 +10,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy'
 import PsychologyIcon from '@mui/icons-material/Psychology'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
+import StopIcon from '@mui/icons-material/Stop'
 import MobileMenuButton from '@/src/app/components/MobileMenuButton'
 import ReasoningBlock from '@/src/app/components/ReasoningBlock'
 import { MarkdownRenderer } from '@/src/app/components/MarkdownRenderer'
@@ -64,7 +65,7 @@ export default function Page() {
 
   const chatRef = useRef(chat)
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, stop } = useChat({
     id: chat_id as string,
     transport: new DefaultChatTransport({
       api: '/api/chat',
@@ -307,22 +308,32 @@ export default function Page() {
                   <AttachFileIcon style={{ fontSize: '1.25rem' }} />
                 </button>
 
-                <button
-                  onClick={() => {
-                    if (input.trim() && status === 'ready' && chat?.data) {
-                      sendMessage({ text: input })
-                      setInput('')
-                    }
-                  }}
-                  disabled={!input.trim() || status !== 'ready'}
-                  className={`p-2 rounded-full transition-all duration-200 flex items-center justify-center ${
-                    input.trim() && status === 'ready'
-                      ? 'bg-ds-primary text-white shadow-md hover:bg-[#3d5ce0]'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  <ArrowUpwardIcon style={{ fontSize: '1.25rem' }} />
-                </button>
+                {status !== 'ready' ? (
+                  <button
+                    onClick={() => stop()}
+                    className="p-2 rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-all duration-200 flex items-center justify-center"
+                    title="停止生成"
+                  >
+                    <StopIcon style={{ fontSize: '1.25rem' }} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (input.trim() && status === 'ready' && chat?.data) {
+                        sendMessage({ text: input })
+                        setInput('')
+                      }
+                    }}
+                    disabled={!input.trim() || status !== 'ready'}
+                    className={`p-2 rounded-full transition-all duration-200 flex items-center justify-center ${
+                      input.trim() && status === 'ready'
+                        ? 'bg-ds-primary text-white shadow-md hover:bg-[#3d5ce0]'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <ArrowUpwardIcon style={{ fontSize: '1.25rem' }} />
+                  </button>
+                )}
               </div>
             </div>
           </div>
