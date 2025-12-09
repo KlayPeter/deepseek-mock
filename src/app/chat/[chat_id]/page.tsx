@@ -149,7 +149,7 @@ export default function Page() {
 
       {/* 顶部导航栏 - 显示聊天标题和当前激活的模型 */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-ds-border">
-        <div className="max-w-3xl mx-auto w-full px-4 py-3 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto w-full px-6 md:px-12 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-medium text-ds-text truncate max-w-[200px] md:max-w-md">
               {chat?.data?.title || '新对话'}
@@ -176,7 +176,7 @@ export default function Page() {
 
       {/* 消息列表区域 */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
-        <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 pb-56">
+        <div className="max-w-3xl mx-auto w-full px-6 md:px-12 py-8 pb-56">
           {allMessages.map((message) => (
             <div
               key={message.id}
@@ -263,7 +263,7 @@ export default function Page() {
       </div>
 
       {/* 底部输入区域 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-white via-white to-transparent pt-10 pb-6 px-4 sm:px-6">
+      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-white via-white to-transparent pt-10 pb-6 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <div className="relative flex flex-col bg-ds-input rounded-[26px] border border-ds-inputBorder shadow-ds transition-all duration-300">
             <textarea
